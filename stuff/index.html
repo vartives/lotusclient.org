@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gentle Snowfall</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: #0a0a15;
+            overflow: hidden;
+        }
+		
+		.buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-top: 4rem;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            transform: translateZ(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #6c43f9, #43a6f9);
+            color: white;
+			text-decoration: none;
+            box-shadow: 0 4px 24px -6px rgba(108, 67, 249, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(108, 67, 249, 0.1);
+			text-decoration: none;
+            border: 2px solid rgba(108, 67, 249, 0.4);
+            color: #6c43f9;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 32px -8px rgba(108, 67, 249, 0.6);
+        }
+
+        .snow {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fall linear forwards;
+            filter: blur(1px);
+        }
+
+        .snowball {
+            width: 6px;
+            height: 6px;
+            filter: blur(0.5px);
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-5vh) translateX(0);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(100vh) translateX(15px);
+                opacity: 0.4;
+            }
+        }
+		.container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        nav {
+            position: fixed;
+            width: 100%;
+            padding: 20px 0;
+            background: rgba(43, 10, 58, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <button>Watch DoofenSchmerz</button></button>
+    <script>
+        function createSnow() {
+            const snow = document.createElement('div');
+            snow.className = Math.random() > 0.3 ? 'snow' : 'snowball snow';
+            
+            // Random starting position
+            snow.style.left = Math.random() * 100 + 'vw';
+            
+            // Random size variation
+            const size = Math.random() * 3 + 2;
+            snow.style.width = size + 'px';
+            snow.style.height = size + 'px';
+            
+            // Random animation duration (3-6 seconds)
+            const duration = Math.random() * 3 + 3;
+            snow.style.animationDuration = duration + 's';
+            
+            document.body.appendChild(snow);
+
+            // Remove snow element after animation
+            snow.addEventListener('animationend', () => {
+                // Keep snow at bottom instead of removing
+                snow.style.position = 'fixed';
+                snow.style.bottom = '0';
+                snow.style.animation = 'none';
+                
+                // Fade out after 20 seconds
+                setTimeout(() => {
+                    snow.remove();
+                }, 20000);
+            });
+        }
+
+        // Create snow at intervals
+        setInterval(createSnow, 100);
+    </script>
+</body>
+</html>
