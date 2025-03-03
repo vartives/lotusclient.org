@@ -298,10 +298,10 @@
                 > System Status: <span style="color: #6c43f9">Undetected</span> [v3.2.1]
             </div>
             <div class="status-line">
-                > Active Features: <span style="color: #43a6f9">100+ mods</span>
+                > Active Accounts: <span style="color: #43a6f9">100+ stocked accounts</span>
             </div>
             <div class="status-line">
-                > Protection: <span style="color: #6c43f9">Gorilla Not Bypass</span>
+                > Type: <span style="color: #6c43f9">Steam</span>
             </div>
         </div>
 
@@ -329,37 +329,6 @@
             <p>Fully customizable control bindings with macros</p>
         </div>
     </div>
-	
-	<script>
-        function createSnow() {
-            const snow = document.createElement('div');
-            snow.className = Math.random() > 0.3 ? 'snow' : 'snowball snow';
-            
-            snow.style.left = Math.random() * 100 + 'vw';
-            
-            const size = Math.random() * 3 + 2;
-            snow.style.width = size + 'px';
-            snow.style.height = size + 'px';
-
-            const duration = Math.random() * 3 + 3;
-            snow.style.animationDuration = duration + 's';
-            
-            document.body.appendChild(snow);
-
-            snow.addEventListener('animationend', () => {
-                snow.style.position = 'fixed';
-                snow.style.bottom = '0';
-                snow.style.animation = 'none';
-
-                setTimeout(() => {
-                    snow.remove();
-                }, 20000);
-            });
-        }
-
-        setInterval(createSnow, 100);
-    </script>
-
     <script>
 	    
         document.querySelectorAll('.shape').forEach((shape, index) => {
