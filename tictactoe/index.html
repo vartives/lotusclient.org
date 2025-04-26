@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cozy Tic-Tac-Toe</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --primary-color: #BB86FC;
+            --secondary-color: #03DAC6;
+            --text-color: #e0e0e0;
+            --board-bg: #1e1e1e;
+            --cell-hover: #2d2d2d;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+        
+        .container {
+            background-color: rgba(30, 30, 30, 0.7);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 10px rgba(187, 134, 252, 0.3);
+        }
+        
+        .status {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            height: 30px;
+            color: var(--text-color);
+        }
+        
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 10px;
+            margin: 30px auto;
+            max-width: 300px;
+        }
+        
+        .cell {
+            background-color: var(--board-bg);
+            border-radius: 10px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid #333;
+        }
+        
+        .cell:hover {
+            background-color: var(--cell-hover);
+            transform: scale(1.05);
+        }
+        
+        .cell.x {
+            color: var(--primary-color);
+        }
+        
+        .cell.o {
+            color: var(--secondary-color);
+        }
+        
+        .board.disabled .cell {
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(187, 134, 252, 0.4);
+        }
+        
+        .difficulty {
+            margin-top: 20px;
+        }
+        
+        .difficulty select {
+            background-color: var(--board-bg);
+            color: var(--text-color);
+            border: 2px solid var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 1rem;
+            outline: none;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        
+        /* Game Over Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background-color: var(--board-bg);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(50px);
+            opacity: 0;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .modal h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        
+        .modal p {
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .modal-buttons button {
+            min-width: 120px;
+        }
+        
+        /* Win/Lose animations */
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .cell.win-cell {
+            animation: celebrate 0.5s ease infinite;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+        
+        .cell.lose-cell {
+            animation: shake 0.5s ease;
+            border-color: #CF6679;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 0;
+        }
+        
+        /* Status indicators */
+        .ai-thinking {
+            display: inline-block;
+            position: relative;
+        }
+        
+        .ai-thinking::after {
+            content: "...";
+            position: absolute;
+            width: 24px;
+            text-align: left;
+            animation: thinking 1.5s infinite;
+        }
+        
+        @keyframes thinking {
+            0% { content: "."; }
+            33% { content: ".."; }
+            66% { content: "..."; }
+        }
+        
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .board {
+                max-width: 250px;
+            }
+            
+            .cell {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="container">
+        <h1>Cozy Tic-Tac-Toe</h1>
+        <div class="status" id="status">Choose a difficulty and start the game!</div>
+        
+        <div class="difficulty">
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+                <option value="impossible">Impossible</option>
+            </select>
+        </div>
+        
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="wins">0</div>
+                <div>Wins</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="draws">0</div>
+                <div>Draws</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="losses">0</div>
+                <div>Losses</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="restart">New Game</button>
+            <button id="reset-stats">Reset Stats</button>
+        </div>
+    </div>
+    
+    <!-- Game Over Modal -->
+    <div class="modal-overlay" id="gameOverModal">
+        <div class="modal">
+            <h2 id="modalTitle">Game Over</h2>
+            <p id="modalMessage">Would you like to play again?</p>
+            <div class="modal-buttons">
+                <button id="newGameBtn">New Game</button>
+                <button id="cancelBtn">No Thanks</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const board = document.getElementById('board');
+            const cells = document.querySelectorAll('.cell');
+            const status = document.getElementById('status');
+            const restartBtn = document.getElementById('restart');
+            const resetStatsBtn = document.getElementById('reset-stats');
+            const difficultySelect = document.getElementById('difficulty');
+            const winsElement = document.getElementById('wins');
+            const drawsElement = document.getElementById('draws');
+            const lossesElement = document.getElementById('losses');
+            const gameOverModal = document.getElementById('gameOverModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const newGameBtn = document.getElementById('newGameBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            
+            let currentPlayer = 'x';
+            let gameActive = false;
+            let gameState = ['', '', '', '', '', '', '', '', ''];
+            let isAIThinking = false;
+            let stats = {
+                wins: 0,
+                draws: 0,
+                losses: 0
+            };
+            
+            // Load stats from localStorage if available
+            if (localStorage.getItem('tictactoeStats')) {
+                stats = JSON.parse(localStorage.getItem('tictactoeStats'));
+                updateStatsDisplay();
+            }
+            
+            const winningConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                [0, 4, 8], [2, 4, 6]             // diagonals
+            ];
+            
+            // Initialize particles
+            createParticles();
+            
+            // Start a new game
+            function startGame() {
+                gameState = ['', '', '', '', '', '', '', '', ''];
+                gameActive = true;
+                isAIThinking = false;
+                currentPlayer = 'x';
+                cells.forEach(cell => {
+                    cell.textContent = '';
+                    cell.classList.remove('x', 'o', 'win-cell', 'lose-cell');
+                });
+                status.textContent = 'Your move! You play as X';
+                board.classList.remove('disabled');
+                
+                // Hide modal if it's open
+                gameOverModal.classList.remove('active');
+            }
+            
+            // Handle cell click
+            function handleCellClick(e) {
+                const cell = e.target;
+                const index = parseInt(cell.getAttribute('data-index'));
+                
+                // Exit if cell is already filled, game is not active, or AI is thinking
+                if (gameState[index] !== '' || !gameActive || isAIThinking) return;
+                
+                gameState[index] = currentPlayer;
+                cell.textContent = currentPlayer.toUpperCase();
+                cell.classList.add(currentPlayer);
+                
+                if (checkWin()) {
+                    const winningCombination = getWinningCombination();
+                    highlightWinningCells(winningCombination);
+                    endGame(false);
+                    return;
+                }
+                
+                if (checkDraw()) {
+                    endGame(true);
+                    return;
+                }
+                
+                // Switch to AI's turn and disable the board
+                currentPlayer = 'o';
+                isAIThinking = true;
+                board.classList.add('disabled');
+                status.innerHTML = 'AI is thinking<span class="ai-thinking"></span>';
+                
+                // Simulate AI thinking with a slight delay
+                setTimeout(() => {
+                    makeAIMove();
+                    isAIThinking = false;
+                    board.classList.remove('disabled');
+                }, 600);
+            }
+            
+            // AI Move based on difficulty
+            function makeAIMove() {
+                // If game is already over, don't make a move
+                if (!gameActive) return;
+                
+                const difficulty = difficultySelect.value;
+                let move;
+                
+                switch(difficulty) {
+                    case 'easy':
+                        move = getRandomMove();
+                        break;
+                    case 'medium':
+                        // 60% chance of smart move, 40% random
+                        move = Math.random() < 0.6 ? getSmartMove() : getRandomMove();
+                        break;
+                    case 'hard':
+                        // 90% chance of smart move, 10% random
+                        move = Math.random() < 0.9 ? getSmartMove() : getRandomMove();
+                        break;
+                    case 'impossible':
+                        move = getSmartMove();
+                        break;
+                    default:
+                        move = getRandomMove();
+                }
+                
+                gameState[move] = currentPlayer;
+                cells[move].textContent = currentPlayer.toUpperCase();
+                cells[move].classList.add(currentPlayer);
+                
+                if (checkWin()) {
+                    const winningCombination = getWinningCombination();
+                    highlightWinningCells(winningCombination, false);
+                    endGame(false);
+                    return;
+                }
+                
+                if (checkDraw()) {
+                    endGame(true);
+                    return;
+                }
+                
+                currentPlayer = 'x';
+                status.textContent = 'Your move! You play as X';
+            }
+            
+            // Random move - just pick an empty cell
+            function getRandomMove() {
+                const emptyCells = gameState.reduce((acc, cell, index) => {
+                    if (cell === '') acc.push(index);
+                    return acc;
+                }, []);
+                
+                return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            }
+            
+            // Smart move using minimax algorithm
+            function getSmartMove() {
+                // First try to win
+                for (let i = 0; i < gameState.length; i++) {
+                    if (gameState[i] === '') {
+                        gameState[i] = 'o';
+                        if (checkWinForPlayer('o')) {
+                            gameState[i] = '';
+                            return i;
+                        }
+                        gameState[i] = '';
+                    }
+                }
+                
+                // Then try to block player from winning
+                for (let i = 0; i < gameState.length; i++) {
+                    if (gameState[i] === '') {
+                        gameState[i] = 'x';
+                        if (checkWinForPlayer('x')) {
+                            gameState[i] = '';
+                            return i;
+                        }
+                        gameState[i] = '';
+                    }
+                }
+                
+                // Take center if available
+                if (gameState[4] === '') return 4;
+                
+                // Take corners if available
+                const corners = [0, 2, 6, 8].filter(i => gameState[i] === '');
+                if (corners.length > 0) {
+                    return corners[Math.floor(Math.random() * corners.length)];
+                }
+                
+                // Take any available edge
+                const edges = [1, 3, 5, 7].filter(i => gameState[i] === '');
+                if (edges.length > 0) {
+                    return edges[Math.floor(Math.random() * edges.length)];
+                }
+                
+                // Fallback to random move
+                return getRandomMove();
+            }
+            
+            // Check if the current player has won
+            function checkWin() {
+                return winningConditions.some(condition => {
+                    return condition.every(index => {
+                        return gameState[index] === currentPlayer;
+                    });
+                });
+            }
+            
+            // Get the winning combination
+            function getWinningCombination() {
+                return winningConditions.find(condition => {
+                    return condition.every(index => {
+                        return gameState[index] === currentPlayer;
+                    });
+                });
+            }
+            
+            // Highlight winning cells
+            function highlightWinningCells(combination, isPlayerWin = true) {
+                combination.forEach(index => {
+                    if (isPlayerWin) {
+                        cells[index].classList.add('win-cell');
+                    } else {
+                        cells[index].classList.add('lose-cell');
+                    }
+                });
+                
+                if (isPlayerWin) {
+                    createConfetti();
+                }
+            }
+            
+            // Create confetti animation for wins
+            function createConfetti() {
+                const confettiCount = 100;
+                const container = document.querySelector('.container');
+                
+                for (let i = 0; i < confettiCount; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.classList.add('confetti');
+                    
+                    // Random size, color and position
+                    const size = Math.random() * 10 + 5;
+                    const colors = ['#BB86FC', '#03DAC6', '#CF6679', '#4CAF50', '#FFEB3B'];
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    confetti.style.width = `${size}px`;
+                    confetti.style.height = `${size}px`;
+                    confetti.style.backgroundColor = color;
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.position = 'absolute';
+                    confetti.style.top = '-20px';
+                    confetti.style.left = `${Math.random() * 100}%`;
+                    
+                    container.appendChild(confetti);
+                    
+                    // Animate the confetti
+                    const duration = Math.random() * 3 + 2;
+                    const delay = Math.random() * 0.5;
+                    
+                    confetti.animate([
+                        { 
+                            transform: 'translateY(0) rotate(0deg)', 
+                            opacity: 1 
+                        },
+                        { 
+                            transform: `translateY(${container.offsetHeight}px) rotate(${Math.random() * 360}deg)`, 
+                            opacity: 0 
+                        }
+                    ], {
+                        duration: duration * 1000,
+                        delay: delay * 1000,
+                        easing: 'cubic-bezier(.09,.92,.95,.13)',
+                        fill: 'forwards'
+                    });
+                    
+                    // Remove confetti element after animation
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, (duration + delay) * 1000);
+                }
+            }
+            
+            // Check if a specific player would win
+            function checkWinForPlayer(player) {
+                return winningConditions.some(condition => {
+                    return condition.every(index => {
+                        return gameState[index] === player;
+                    });
+                });
+            }
+            
+            // Check for a draw
+            function checkDraw() {
+                return !gameState.includes('');
+            }
+            
+            // End the game
+            function endGame(isDraw) {
+                gameActive = false;
+                isAIThinking = false;
+                board.classList.add('disabled');
+                
+                if (isDraw) {
+                    status.textContent = 'Game ends in a draw!';
+                    stats.draws++;
+                    
+                    // Show draw modal after a short delay
+                    setTimeout(() => {
+                        showModal('Draw!', 'The game ended in a draw. Would you like to play again?');
+                    }, 1000);
+                } else {
+                    if (currentPlayer === 'x') {
+                        status.textContent = 'You won! Congratulations!';
+                        stats.wins++;
+                        
+                        // Show win modal after a short delay to see the animation
+                        setTimeout(() => {
+                            showModal('Victory!', 'Congratulations! You won the game! Ready for another round?');
+                        }, 1500);
+                    } else {
+                        status.textContent = 'The AI won!';
+                        stats.losses++;
+                        
+                        // Show lose modal after a short delay
+                        setTimeout(() => {
+                            showModal('Defeat', 'The AI won this round. Would you like to try again?');
+                        }, 1000);
+                    }
+                }
+                
+                updateStatsDisplay();
+                saveStats();
+            }
+            
+            // Show the game over modal
+            function showModal(title, message) {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                gameOverModal.classList.add('active');
+            }
+            
+            // Update the stats display
+            function updateStatsDisplay() {
+                winsElement.textContent = stats.wins;
+                drawsElement.textContent = stats.draws;
+                lossesElement.textContent = stats.losses;
+            }
+            
+            // Save stats to localStorage
+            function saveStats() {
+                localStorage.setItem('tictactoeStats', JSON.stringify(stats));
+            }
+            
+            // Reset stats
+            function resetStats() {
+                stats = {
+                    wins: 0,
+                    draws: 0,
+                    losses: 0
+                };
+                updateStatsDisplay();
+                saveStats();
+            }
+            
+            // Create floating particles in the background
+            function createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                const particleCount = 30;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    
+                    // Random position, size and animation duration
+                    const size = Math.random() * 4 + 2;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `${Math.random() * 100}%`;
+                    particle.style.opacity = Math.random() * 0.3 + 0.1;
+                    
+                    // Random color variation
+                    const colors = ['#BB86FC', '#03DAC6', '#CF6679'];
+                    particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    particlesContainer.appendChild(particle);
+                    
+                    // Animate the particle
+                    animateParticle(particle);
+                }
+            }
+            
+            // Animate a single particle with random movement
+            function animateParticle(particle) {
+                const duration = Math.random() * 50 + 30; // seconds
+                const xMove = Math.random() * 40 - 20; // pixels
+                const yMove = Math.random() * 40 - 20; // pixels
+                
+                particle.animate([
+                    { transform: 'translate(0, 0)' },
+                    { transform: `translate(${xMove}px, ${yMove}px)` },
+                    { transform: 'translate(0, 0)' }
+                ], {
+                    duration: duration * 1000,
+                    iterations: Infinity
+                });
+            }
+            
+            // Event listeners
+            cells.forEach(cell => {
+                cell.addEventListener('click', handleCellClick);
+            });
+            
+            restartBtn.addEventListener('click', startGame);
+            resetStatsBtn.addEventListener('click', resetStats);
+            newGameBtn.addEventListener('click', startGame);
+            cancelBtn.addEventListener('click', () => {
+                gameOverModal.classList.remove('active');
+            });
+            
+            // Start game initially
+            startGame();
+        });
+    </script>
+</body>
+</html>
